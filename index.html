@@ -951,16 +951,28 @@ submitBtn.addEventListener('click', async ()=>{
 
   submitBtn.disabled = true;
   submitBtn.textContent = 'Sending…';
-  try{
-    await fetch(NTFY_BASE, {
+
+  const publishUrl = NTFY_BASE
+    + '?title=' + encodeURIComponent('New Order — Table ' + table)
+    + '&priority=urgent&tags=hamburger';
+
+  async function trySend(){
+    const res = await fetch(publishUrl, {
       method:'POST',
-      headers:{
-        'Title': `New Order — Table ${table}`,
-        'Priority':'urgent',
-        'Tags':'hamburger'
-      },
       body: JSON.stringify(payload)
     });
+    if(!res.ok) throw new Error('Server responded with status ' + res.status);
+    return res;
+  }
+
+  try{
+    try{
+      await trySend();
+    }catch(firstErr){
+      // one retry, in case of a flaky connection
+      await new Promise(r=>setTimeout(r, 1200));
+      await trySend();
+    }
     document.getElementById('successText').textContent =
       `Table ${table}: your order for ${total} ETB has been sent to the cashier.`;
     document.getElementById('successBox').classList.add('show');
@@ -968,7 +980,8 @@ submitBtn.addEventListener('click', async ()=>{
     Object.keys(cart).forEach(id=>setQty(id,0));
     document.getElementById('orderNote').value='';
   }catch(err){
-    alert('Could not send your order — please check your internet connection and try again, or tell a staff member your table number.');
+    alert('Could not send your order.\n\nDetails: ' + (err && err.message ? err.message : err) +
+      '\n\nPlease check your internet connection and try again, or tell a staff member your table number.');
   }finally{
     submitBtn.disabled = false;
     submitBtn.textContent = 'Submit Order';
