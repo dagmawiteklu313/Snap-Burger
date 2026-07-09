@@ -945,7 +945,7 @@ submitBtn.addEventListener('click', async ()=>{
   }));
   const total = cartTotal();
   const payload = {
-    table, note, items, total,
+    type:'order', table, note, items, total,
     time: new Date().toISOString()
   };
 
@@ -1000,9 +1000,12 @@ function initCashier(){
   document.getElementById('cashierRoot').style.display='block';
 
   const list = document.getElementById('ordersList');
+  const doneList = document.getElementById('doneList');
+  const doneLabel = document.getElementById('doneLabel');
   const emptyMsg = document.getElementById('cashierEmpty');
   const statusText = document.getElementById('statusText');
-  const seen = new Set();
+  const rendered = new Map(); // orderId -> card element
+  const doneIds = new Set();  // orderIds already confirmed done
 
   function beep(){
     try{
@@ -1014,17 +1017,31 @@ function initCashier(){
     }catch(e){}
   }
 
-  function renderOrder(msg, prepend){
-    let data;
-    try{ data = JSON.parse(msg.message); }catch(e){ return; }
-    if(seen.has(msg.id)) return;
-    seen.add(msg.id);
+  function markCompleted(card, total){
+    if(card.classList.contains('completed')) return;
+    card.classList.add('completed');
+    const foot = card.querySelector('.order-foot');
+    foot.innerHTML = `<span class="order-total">${total} ETB</span><span class="completed-tag">✓ Sent to Chef</span>`;
+    doneList.prepend(card);
+    doneLabel.style.display='block';
+    if(list.children.length===0) emptyMsg.style.display='block';
+  }
+
+  function publishDone(orderId){
+    const url = NTFY_BASE + '?title=' + encodeURIComponent('Order completed') + '&priority=low&tags=white_check_mark';
+    fetch(url, { method:'POST', body: JSON.stringify({ type:'status', status:'done', orderId }) }).catch(()=>{});
+  }
+
+  // orderId = the ntfy message id of the original order
+  function renderOrder(orderId, data, opts){
+    opts = opts || {};
+    if(rendered.has(orderId)) return;
     emptyMsg.style.display='none';
 
     const card = document.createElement('div');
     card.className='order-card';
-    card.id = 'order-'+msg.id;
-    const timeStr = new Date(data.time || msg.time*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    card.id = 'order-'+orderId;
+    const timeStr = new Date(data.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     card.innerHTML = `
       <div class="order-card-head">
         <span class="order-table">Table ${data.table}</span>
@@ -1039,45 +1056,77 @@ function initCashier(){
         <button class="done-btn">Send to Chef</button>
       </div>
     `;
-    const doneList = document.getElementById('doneList');
-    const doneLabel = document.getElementById('doneLabel');
     card.querySelector('.done-btn').addEventListener('click', ()=>{
-      card.classList.add('completed');
-      const foot = card.querySelector('.order-foot');
-      foot.innerHTML = `<span class="order-total">${data.total} ETB</span><span class="completed-tag">✓ Sent to Chef</span>`;
-      doneList.prepend(card);
-      doneLabel.style.display='block';
-      if(list.children.length===0) emptyMsg.style.display='block';
+      markCompleted(card, data.total);
+      publishDone(orderId);
     });
-    if(prepend){ list.prepend(card); } else { list.appendChild(card); }
-    if(!prepend) beep();
+
+    rendered.set(orderId, card);
+
+    if(doneIds.has(orderId)){
+      // already confirmed done in a previous session / another device
+      if(opts.prepend){ doneList.prepend(card); } else { doneList.appendChild(card); }
+      markCompleted(card, data.total);
+    } else {
+      if(opts.prepend){ list.prepend(card); } else { list.appendChild(card); }
+      if(!opts.silent) beep();
+    }
   }
 
-  // backfill recent orders (last 12 hours) then stream live ones
+  function handleIncoming(msg, opts){
+    opts = opts || {};
+    let data;
+    try{ data = JSON.parse(msg.message); }catch(e){ return; }
+
+    if(data.type === 'status' && data.status === 'done'){
+      doneIds.add(data.orderId);
+      const card = rendered.get(data.orderId);
+      if(card) markCompleted(card, card.dataset.total || '');
+      return;
+    }
+    if(data.type === 'order' || data.items){
+      renderOrder(msg.id, data, opts);
+    }
+  }
+
+  // backfill recent history (last 12h), then stream live updates
   fetch(NTFY_BASE + '/json?poll=1&since=12h')
     .then(r=>r.text())
     .then(text=>{
-      text.trim().split('\n').filter(Boolean).forEach(line=>{
+      const lines = text.trim().split('\n').filter(Boolean)
+        .map(l=>{ try{ return JSON.parse(l); }catch(e){ return null; } })
+        .filter(m=> m && m.event==='message');
+
+      // pass 1: collect which orders are already marked done
+      lines.forEach(msg=>{
         try{
-          const msg = JSON.parse(line);
-          if(msg.event==='message') renderOrder(msg, true);
+          const data = JSON.parse(msg.message);
+          if(data.type==='status' && data.status==='done') doneIds.add(data.orderId);
+        }catch(e){}
+      });
+      // pass 2: render orders (done ones go straight to "Sent to Chef", silently)
+      lines.forEach(msg=>{
+        try{
+          const data = JSON.parse(msg.message);
+          if(data.type==='order' || data.items) renderOrder(msg.id, data, {prepend:true, silent:true});
         }catch(e){}
       });
     })
-    .catch(()=>{});
-
-  const es = new EventSource(NTFY_BASE + '/sse');
-  es.onopen = ()=>{ statusText.textContent = 'Live — waiting for orders'; };
-  es.onerror = ()=>{ statusText.textContent = 'Reconnecting…'; };
-  es.onmessage = (e)=>{
-    try{
-      const msg = JSON.parse(e.data);
-      if(msg.event==='message'){
-        statusText.textContent = 'Live';
-        renderOrder(msg, false);
-      }
-    }catch(err){}
-  };
+    .catch(()=>{})
+    .finally(()=>{
+      const es = new EventSource(NTFY_BASE + '/sse');
+      es.onopen = ()=>{ statusText.textContent = 'Live — waiting for orders'; };
+      es.onerror = ()=>{ statusText.textContent = 'Reconnecting…'; };
+      es.onmessage = (e)=>{
+        try{
+          const msg = JSON.parse(e.data);
+          if(msg.event==='message'){
+            statusText.textContent = 'Live';
+            handleIncoming(msg, {prepend:false});
+          }
+        }catch(err){}
+      };
+    });
 }
 
 if(new URLSearchParams(window.location.search).get('cashier')==='1'){
