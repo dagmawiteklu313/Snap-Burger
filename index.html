@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Snap — Burger & Juice House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#150f0b;
+    --bg-2:#1c140f;
+    --surface:#20170f;
+    --surface-2:#2a1e14;
+    --line: rgba(245,236,221,0.09);
+    --text:#f6ecdc;
+    --text-muted:#b6a488;
+    --accent:#e2761b;
+    --accent-2:#f2b544;
+    --ember:#c1272d;
+    --paper:#f3ead4;
+    --paper-ink:#a5241f;
+    --radius:16px;
+    --maxw:640px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 500px at 50% -10%, rgba(226,118,27,0.16), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:80px;
+  }
+  .am{ font-family:'Noto Sans Ethiopic','Inter',sans-serif; }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 18px;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:38px 18px 26px;
+    text-align:center;
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(135deg, transparent 0 22px, rgba(226,118,27,0.045) 22px 24px);
+    pointer-events:none;
+  }
+  .brandmark{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:64px; height:64px; border-radius:50%;
+    background: radial-gradient(circle at 32% 28%, var(--accent-2), var(--accent) 60%, #a4530f 100%);
+    box-shadow: 0 10px 24px rgba(226,118,27,0.35), inset 0 -4px 8px rgba(0,0,0,0.25);
+    margin-bottom:14px;
+    font-family:'Anton',sans-serif;
+    font-size:1.6rem;
+    color:#1a1109;
+    letter-spacing:0.5px;
+  }
+  .wordmark{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(2.6rem, 12vw, 3.6rem);
+    letter-spacing:2px;
+    line-height:0.9;
+    margin:0;
+    background:linear-gradient(180deg, var(--accent-2), var(--accent) 70%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 0 rgba(0,0,0,0.2);
+  }
+  .tagline{
+    margin:8px 0 2px;
+    font-size:0.78rem;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    font-weight:600;
+  }
+  .tagline-am{
+    font-size:0.95rem;
+    color:var(--accent-2);
+    margin:2px 0 0;
+  }
+
+  /* grill mark divider — signature element */
+  .grill-divider{
+    display:flex; justify-content:center; gap:6px;
+    margin:18px 0 0;
+  }
+  .grill-divider span{
+    width:26px; height:4px; border-radius:2px;
+    background:linear-gradient(90deg, var(--accent), var(--ember));
+    transform:skewX(-20deg);
+    opacity:0.85;
+  }
+  .grill-divider span:nth-child(2){opacity:0.6;}
+  .grill-divider span:nth-child(3){opacity:0.35;}
+
+  /* ---------- SEARCH ---------- */
+  .search-bar{
+    max-width:var(--maxw); margin:16px auto 0; padding:0 18px;
+  }
+  .search-bar input{
+    width:100%;
+    padding:13px 16px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:0.95rem;
+    outline:none;
+  }
+  .search-bar input::placeholder{color:var(--text-muted);}
+  .search-bar input:focus{border-color:var(--accent);}
+
+  /* ---------- NAV ---------- */
+  nav.cats{
+    position:sticky; top:0; z-index:20;
+    background:rgba(21,15,11,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:12px 0;
+    margin-top:14px;
+  }
+  .cats-scroll{
+    display:flex; gap:8px;
+    overflow-x:auto;
+    padding:0 18px;
+    max-width:var(--maxw); margin:0 auto;
+    scrollbar-width:none;
+  }
+  .cats-scroll::-webkit-scrollbar{display:none;}
+  .cat-pill{
+    flex:0 0 auto;
+    padding:8px 14px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--text-muted);
+    font-size:0.82rem;
+    font-weight:600;
+    white-space:nowrap;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .cat-pill.active{
+    background:linear-gradient(135deg, var(--accent), #b85e12);
+    color:#1a1109;
+    border-color:transparent;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section.cat{
+    padding:30px 0 6px;
+    scroll-margin-top:64px;
+  }
+  .cat-head{
+    display:flex; align-items:baseline; gap:10px;
+    margin-bottom:4px;
+  }
+  .cat-head h2{
+    font-family:'Anton',sans-serif;
+    font-size:1.5rem;
+    letter-spacing:1px;
+    margin:0;
+    color:var(--accent-2);
+    text-transform:uppercase;
+  }
+  .cat-head .count{
+    font-size:0.75rem;
+    color:var(--text-muted);
+    font-weight:600;
+  }
+  .cat-sub{
+    font-size:0.82rem;
+    color:var(--text-muted);
+    margin:2px 0 16px;
+  }
+
+  .item{
+    display:flex;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px dashed var(--line);
+    align-items:flex-start;
+  }
+  .item:last-child{border-bottom:none;}
+  .item-main{flex:1; min-width:0;}
+  .item-title-row{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .item-name{
+    font-weight:700;
+    font-size:1.02rem;
+    color:var(--text);
+  }
+  .item-amharic{
+    font-size:0.88rem;
+    color:var(--accent-2);
+    opacity:0.85;
+    margin-top:1px;
+  }
+  .item-desc{
+    font-size:0.84rem;
+    color:var(--text-muted);
+    margin-top:5px;
+    line-height:1.4;
+  }
+  .badge{
+    display:inline-block;
+    font-size:0.62rem;
+    font-weight:800;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:#1a1109;
+    background:var(--accent-2);
+    padding:2px 7px;
+    border-radius:5px;
+  }
+
+  /* price tag — signature element echoing the physical menu's paper corrections */
+  .price-tag{
+    flex:0 0 auto;
+    background:var(--paper);
+    color:#241b12;
+    font-family:'Anton',sans-serif;
+    font-size:1.0rem;
+    padding:7px 11px 6px;
+    border-radius:4px;
+    transform:rotate(-2deg);
+    box-shadow:0 3px 8px rgba(0,0,0,0.35);
+    position:relative;
+    min-width:64px;
+    text-align:center;
+    line-height:1;
+  }
+  .price-tag::after{
+    content:"";
+    position:absolute;
+    left:10%; right:10%; bottom:3px;
+    height:2px;
+    background:var(--paper-ink);
+    opacity:0.55;
+  }
+  .price-tag small{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:0.55rem;
+    color:var(--paper-ink);
+    margin-top:2px;
+  }
+
+  .empty-state{
+    display:none;
+    text-align:center;
+    color:var(--text-muted);
+    padding:60px 20px;
+    font-size:0.95rem;
+  }
+
+  footer{
+    text-align:center;
+    padding:36px 18px 10px;
+    color:var(--text-muted);
+    font-size:0.78rem;
+    border-top:1px solid var(--line);
+    margin-top:20px;
+  }
+  footer .fam{color:var(--accent-2); font-size:0.9rem; margin-top:4px;}
+
+  @media (min-width:520px){
+    .wordmark{font-size:3.8rem;}
+  }
+
+  /* ---------- ORDERING: qty stepper on price tag ---------- */
+  .item-side{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .price-tag{cursor:pointer; user-select:none; transition:transform .12s ease;}
+  .price-tag:active{transform:rotate(-2deg) scale(0.94);}
+  .price-tag.in-cart{background:var(--accent-2);}
+  .stepper{
+    display:none;
+    align-items:center;
+    gap:8px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px;
+  }
+  .stepper.show{display:flex;}
+  .stepper button{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:none;
+    background:var(--accent);
+    color:#1a1109;
+    font-family:'Anton',sans-serif;
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+  }
+  .stepper .qty{
+    min-width:16px;
+    text-align:center;
+    font-weight:800;
+    font-size:0.9rem;
+  }
+
+  /* ---------- CART BAR ---------- */
+  .cart-bar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:40;
+    display:none;
+    justify-content:center;
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, transparent, rgba(21,15,11,0.75) 30%, var(--bg) 65%);
+  }
+  .cart-bar.show{display:flex;}
+  .cart-bar-inner{
+    width:100%; max-width:var(--maxw);
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg, var(--accent), #b85e12);
+    color:#1a1109;
+    padding:13px 18px;
+    border-radius:14px;
+    box-shadow:0 10px 26px rgba(0,0,0,0.45);
+    cursor:pointer;
+    font-weight:700;
+  }
+  .cart-bar-inner .cb-left{font-size:0.9rem;}
+  .cart-bar-inner .cb-right{font-family:'Anton',sans-serif; font-size:1rem; letter-spacing:0.5px;}
+
+  /* ---------- CART DRAWER ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:50;
+    background:rgba(10,7,5,0.6);
+    display:none;
+    align-items:flex-end;
+  }
+  .overlay.show{display:flex;}
+  .drawer{
+    width:100%; max-width:var(--maxw); margin:0 auto;
+    max-height:85vh;
+    background:var(--bg-2);
+    border-radius:20px 20px 0 0;
+    border-top:1px solid var(--line);
+    display:flex; flex-direction:column;
+    animation:slideUp .22s ease;
+  }
+  @keyframes slideUp{ from{transform:translateY(100%);} to{transform:translateY(0);} }
+  .drawer-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .drawer-head h3{
+    font-family:'Anton',sans-serif; margin:0; font-size:1.2rem;
+    letter-spacing:0.5px; color:var(--accent-2); text-transform:uppercase;
+  }
+  .drawer-close{
+    background:none; border:none; color:var(--text-muted);
+    font-size:1.4rem; cursor:pointer; line-height:1; padding:4px;
+  }
+  .drawer-body{overflow-y:auto; padding:6px 20px 16px;}
+  .cart-line{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 0; border-bottom:1px dashed var(--line);
+  }
+  .cart-line .cl-main{flex:1; min-width:0;}
+  .cart-line .cl-name{font-weight:700; font-size:0.92rem;}
+  .cart-line .cl-price{font-size:0.78rem; color:var(--text-muted); margin-top:2px;}
+  .field-block{padding:14px 0 4px;}
+  .field-block label{
+    display:block; font-size:0.78rem; font-weight:700;
+    color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;
+    margin-bottom:6px;
+  }
+  .field-block input, .field-block textarea{
+    width:100%; padding:12px 14px; border-radius:10px;
+    border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-family:'Inter',sans-serif; font-size:0.95rem;
+    outline:none; resize:none;
+  }
+  .field-block input:focus, .field-block textarea:focus{border-color:var(--accent);}
+  .cart-total-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:14px 0 2px; font-weight:800;
+  }
+  .cart-total-row .ct-label{color:var(--text-muted); font-size:0.85rem; font-weight:600;}
+  .cart-total-row .ct-amount{font-family:'Anton',sans-serif; font-size:1.4rem; color:var(--accent-2);}
+  .submit-btn{
+    width:100%; margin-top:14px; padding:15px;
+    border:none; border-radius:12px;
+    background:linear-gradient(135deg, var(--accent), #b85e12);
+    color:#1a1109; font-weight:800; font-size:1rem;
+    cursor:pointer;
+  }
+  .submit-btn:disabled{opacity:0.6; cursor:default;}
+  .empty-cart{padding:30px 0; text-align:center; color:var(--text-muted); font-size:0.9rem;}
+
+  /* ---------- SUCCESS ---------- */
+  .success-box{
+    position:fixed; inset:0; z-index:60;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(10,7,5,0.75);
+    padding:24px;
+  }
+  .success-box.show{display:flex;}
+  .success-card{
+    background:var(--bg-2); border:1px solid var(--line);
+    border-radius:18px; padding:30px 24px; text-align:center;
+    max-width:360px;
+  }
+  .success-card .tick{
+    width:56px; height:56px; border-radius:50%;
+    background:var(--accent-2); color:#1a1109;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 14px; font-size:1.6rem; font-weight:800;
+  }
+  .success-card h4{
+    font-family:'Anton',sans-serif; margin:0 0 6px; font-size:1.2rem;
+    color:var(--text); text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .success-card p{color:var(--text-muted); font-size:0.88rem; margin:0 0 18px;}
+  .success-card button{
+    background:var(--accent); color:#1a1109; border:none;
+    padding:11px 22px; border-radius:10px; font-weight:700; cursor:pointer;
+  }
+
+  .staff-link{
+    display:block; text-align:center; margin-top:14px;
+    color:var(--text-muted); font-size:0.72rem; opacity:0.55;
+    text-decoration:none;
+  }
+
+  /* ---------- CASHIER VIEW ---------- */
+  #cashierRoot{display:none; max-width:720px; margin:0 auto; padding:20px 16px 60px;}
+  .cashier-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .cashier-head h1{
+    font-family:'Anton',sans-serif; font-size:1.6rem; color:var(--accent-2); margin:0;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .cashier-status{font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:6px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:#4caf50; box-shadow:0 0 8px #4caf50;}
+  .order-card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:16px 18px; margin-bottom:14px;
+    animation:popIn .25s ease;
+  }
+  @keyframes popIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .order-card-head{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:10px;
+  }
+  .order-table{
+    font-family:'Anton',sans-serif; font-size:1.3rem; color:var(--accent-2);
+  }
+  .order-time{font-size:0.75rem; color:var(--text-muted);}
+  .order-items{margin:0 0 12px; padding:0; list-style:none;}
+  .order-items li{
+    display:flex; justify-content:space-between;
+    font-size:0.9rem; padding:4px 0; border-bottom:1px dashed var(--line);
+  }
+  .order-note{font-size:0.82rem; color:var(--accent-2); margin-bottom:10px;}
+  .order-foot{display:flex; justify-content:space-between; align-items:center;}
+  .order-total{font-family:'Anton',sans-serif; font-size:1.1rem;}
+  .done-btn{
+    background:var(--accent); color:#1a1109; border:none;
+    padding:9px 16px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer;
+  }
+  .cashier-empty{text-align:center; color:var(--text-muted); padding:60px 20px; font-size:0.9rem;}
+  .section-label{
+    font-family:'Anton',sans-serif; font-size:0.9rem; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--text-muted); margin:22px 0 10px;
+  }
+  .order-card.completed{
+    border-color:rgba(76,175,80,0.5);
+    background:linear-gradient(135deg, rgba(76,175,80,0.14), var(--surface));
+  }
+  .order-card.completed .order-table{color:#6fcf73;}
+  .completed-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#2e7d32; color:#eafff0;
+    font-size:0.78rem; font-weight:800;
+    padding:7px 14px; border-radius:8px;
+  }
+</style>
+</head>
+<body>
+
+<div id="customerRoot">
+
+<div class="hero">
+  <div class="brandmark">S</div>
+  <h1 class="wordmark">SNAP</h1>
+  <p class="tagline">Burger &amp; Juice House</p>
+  <p class="tagline-am am">በርገር እና ጁስ ቤት</p>
+  <div class="grill-divider"><span></span><span></span><span></span></div>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="search" placeholder="Search the menu… burger, juice, chicken" autocomplete="off">
+</div>
+
+<nav class="cats">
+  <div class="cats-scroll" id="catNav"></div>
+</nav>
+
+<div class="wrap">
+  <div id="menuRoot"></div>
+  <div class="empty-state" id="emptyState">No dishes match your search. Try “burger”, “juice”, or “egg”.</div>
+</div>
+
+<footer>
+  <div>Snap Burger &amp; Juice House</div>
+  <div class="fam am">ስናፕ በርገር እና ጁስ ቤት</div>
+  <div style="margin-top:10px; opacity:0.7;">Prices in Ethiopian Birr (ETB) · Menu subject to change</div>
+  <a href="?cashier=1" class="staff-link">Staff / Cashier view →</a>
+</footer>
+
+</div><!-- /customerRoot -->
+
+<!-- floating cart bar -->
+<div class="cart-bar" id="cartBar">
+  <div class="cart-bar-inner" id="cartBarInner">
+    <span class="cb-left" id="cartBarLeft">0 items</span>
+    <span class="cb-right" id="cartBarRight">View Order →</span>
+  </div>
+</div>
+
+<!-- cart drawer -->
+<div class="overlay" id="cartOverlay">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h3>Your Order</h3>
+      <button class="drawer-close" id="closeCart">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div id="cartLines"></div>
+      <div class="field-block">
+        <label for="tableNum">Table Number</label>
+        <input type="text" id="tableNum" inputmode="numeric" placeholder="e.g. 7">
+      </div>
+      <div class="field-block">
+        <label for="orderNote">Note for the kitchen (optional)</label>
+        <textarea id="orderNote" rows="2" placeholder="No onions, extra spicy…"></textarea>
+      </div>
+      <div class="cart-total-row">
+        <span class="ct-label">Total</span>
+        <span class="ct-amount" id="cartTotal">0 ETB</span>
+      </div>
+      <button class="submit-btn" id="submitOrderBtn">Submit Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- success confirmation -->
+<div class="success-box" id="successBox">
+  <div class="success-card">
+    <div class="tick">✓</div>
+    <h4>Order Sent!</h4>
+    <p id="successText">Your order has been sent to the cashier.</p>
+    <button id="successClose">Done</button>
+  </div>
+</div>
+
+<!-- cashier dashboard -->
+<div id="cashierRoot">
+  <div class="cashier-head">
+    <h1>Cashier — Live Orders</h1>
+    <span class="cashier-status"><span class="dot"></span> <span id="statusText">Connecting…</span></span>
+  </div>
+
+  <div class="section-label">New Orders</div>
+  <div id="ordersList"></div>
+  <div class="cashier-empty" id="cashierEmpty">Waiting for orders… new orders from customer tables will appear here automatically.</div>
+
+  <div class="section-label" id="doneLabel" style="display:none;">Sent to Chef</div>
+  <div id="doneList"></div>
+</div>
+
+<script>
+const MENU = [
+  {
+    id:"breakfast", name:"Breakfast", nameAm:"ቁርስ",
+    sub:"Served all morning",
+    items:[
+      {name:"Egg Sandwich", am:"እንቁላል ሳንድዊች", desc:"Egg, mayonnaise, served with chips.", price:320},
+      {name:"Scramble Egg", am:"እንቁላል ፍርፍር", desc:"Egg, onion, tomato and green pepper.", price:300},
+      {name:"Beef Omelet", am:"ቢፍ ኦምሌት", desc:"Egg, beef, onion, tomato and green pepper.", price:350},
+      {name:"Pan Cake", am:"ፓን ኬክ", desc:"Egg, wheat or teff flour, served with syrup.", price:350},
+      {name:"Special Ful", am:"ስፔሻል ፉል", desc:"Beans, tomato sauce, onion, green pepper and boiled egg, or scramble egg with yogurt.", price:300},
+      {name:"French Toast", am:"ፍሬንች ቶስት", desc:"Eggs, served with chocolate syrup.", price:300},
+      {name:"Special Chechebsa", am:"ስፔሻል ጨጨብሳ", desc:"Egg, avocado and honey.", price:400, badge:"House Special"},
+      {name:"Special Fetera", am:"ስፔሻል ፈጠራ", desc:"Cheese, egg and honey.", price:300},
+      {name:"Avocado Toast with Poached Egg", am:"አቮካዶ ቶስት ከፖችድ እንቁላል ጋር", desc:"Avocado, green pepper, tomato, onion, egg and pesto sauce.", price:400},
+      {name:"Normal Chechebsa", am:"ኖርማል ጨጨብሳ", desc:"Served with honey.", price:300}
+    ]
+  },
+  {
+    id:"burgers", name:"Burgers", nameAm:"በርገር",
+    sub:"All burgers served with chips",
+    items:[
+      {name:"Snap Special Burger", am:"ስናፕ ስፔሻል በርገር", desc:"Two slices of beef, cheese, barbecue sauce and beef mortadella.", price:720, badge:"House Special"},
+      {name:"Jambo Burger", am:"ጃምቦ በርገር", desc:"Sliced chicken, two slices of beef, cheese, onion, tomato and green pepper.", price:1050, badge:"House Special"},
+      {name:"Cheese Burger", am:"ችዝ በርገር", desc:"Beef, lettuce, tomato, onion and cheese.", price:550},
+      {name:"Chicken Burger", am:"ችከን በርገር", desc:"Chicken, cheese, onion, tomato and green pepper.", price:500},
+      {name:"Beef Burger", am:"ቢፍ በርገር", desc:"Beef, lettuce, tomato and onion.", price:500}
+    ]
+  },
+  {
+    id:"wraps", name:"Wraps", nameAm:"ራፕ",
+    sub:"All wraps served with chips",
+    items:[
+      {name:"Chicken Cheese Wrap", am:"ችከን ችዝ ራፕ", desc:"Chicken, cheese and lettuce.", price:550},
+      {name:"Beef Wrap", am:"ቢፍ ራፕ", desc:"Beef and cheese.", price:550},
+      {name:"Avocado Wrap", am:"አቮካዶ ራፕ", desc:"Avocado, green pepper, tomato and pesto sauce.", price:350},
+      {name:"Vegetable Wrap", am:"አትክልት ራፕ", desc:"Seasonal vegetables.", price:350}
+    ]
+  },
+  {
+    id:"chicken", name:"Chicken", nameAm:"ችከን",
+    sub:"All served with chips",
+    items:[
+      {name:"Chicken Wing — 6pcs", am:"ችከን ዊንግ 6 ብዛት", desc:"Six pieces of chicken wings.", price:1150},
+      {name:"Chicken Wing — 4pcs", am:"ችከን ዊንግ 4 ብዛት", desc:"Four pieces of chicken wings.", price:850},
+      {name:"Chicken Nuggets", am:"ችከን ነጌት", desc:"Crispy chicken nuggets.", price:520}
+    ]
+  },
+  {
+    id:"fasting", name:"Fasting Menu", nameAm:"የፆም ምግቦች",
+    sub:"Vegan-friendly dishes",
+    items:[
+      {name:"Toast Avocado Sandwich", am:"የአቮካዶ ቶስት ሳንድዊች", desc:"", price:330},
+      {name:"Fish Gulash", am:"የዓሳ ጉላሽ", desc:"", price:500},
+      {name:"Fish Cutlet", am:"የዓሳ ኩትሌት", desc:"", price:500},
+      {name:"Spaghetti with Tuna Sauce", am:"ፓስታ በቱና", desc:"", price:450},
+      {name:"Penne with Tuna Sauce", am:"መኮረኒ በቱና", desc:"", price:450},
+      {name:"Rice with Tuna Sauce", am:"ሩዝ በቱና", desc:"", price:450},
+      {name:"Falafel Wrap", am:"ፈላፍል ራፕ", desc:"", price:300},
+      {name:"Home Salad", am:"የቤት ሰላጣ", desc:"", price:280},
+      {name:"Assorted Vegetables", am:"የተለያዩ አትክልቶች", desc:"", price:300},
+      {name:"Vegetable Sandwich", am:"የአትክልት ሳንድዊች", desc:"", price:300},
+      {name:"Chips", am:"ቺፕስ", desc:"", price:300},
+      {name:"Tuna Sandwich", am:"የቱና ሳንድዊች", desc:"", price:450},
+      {name:"Spaghetti with Pesto Sauce", am:"ፓስታ በፔስቶ ሶስ", desc:"", price:330},
+      {name:"Penne with Pesto Sauce", am:"መኮረኒ በፔስቶ ሶስ", desc:"", price:330},
+      {name:"Rice with Pesto Sauce", am:"ሩዝ በፔስቶ ሶስ", desc:"", price:330},
+      {name:"Falafel Burger", am:"ፈላፍል በርገር", desc:"", price:400},
+      {name:"Spaghetti with Vegetable", am:"ፓስታ ከአትክልት ጋር", desc:"", price:330},
+      {name:"Penne with Vegetable", am:"መኮረኒ ከአትክልት ጋር", desc:"", price:330},
+      {name:"Rice with Vegetable", am:"ሩዝ ከአትክልት ጋር", desc:"", price:330},
+      {name:"Spaghetti with Tomato Sauce", am:"ፓስታ በቲማቲም", desc:"", price:300},
+      {name:"Penne with Tomato Sauce", am:"መኮረኒ በቲማቲም", desc:"", price:300},
+      {name:"Rice with Tomato Sauce", am:"ሩዝ በቲማቲም", desc:"", price:300},
+      {name:"Fasting Special Juice", am:"የፆም ልዩ ጭማቂ", desc:"", price:250},
+      {name:"Flax Seed Juice", am:"የተልባ ጭማቂ", desc:"", price:250},
+      {name:"Falafel Wrap + Juice", am:"ፈላፍል ራፕ + ጭማቂ", desc:"Combo meal.", price:520, badge:"Combo"},
+      {name:"Fish Gulash + Chips + Juice", am:"የዓሳ ጉላሽ + ቺፕስ + ጭማቂ", desc:"Combo meal.", price:750, badge:"Combo"}
+    ]
+  },
+  {
+    id:"hot-drinks", name:"Hot Drinks", nameAm:"ትኩስ መጠጦች",
+    sub:"",
+    items:[
+      {name:"Coffee", am:"ቡና", desc:"", price:80},
+      {name:"Cappuccino", am:"ካፑችኖ", desc:"", price:160},
+      {name:"Cafe Latte", am:"ካፌ ላቴ", desc:"", price:160},
+      {name:"Fasting Macchiato", am:"የፆም ማኪያቶ", desc:"", price:130},
+      {name:"Flavored Tea", am:"ፍሌቨርድ ሻይ", desc:"", price:60},
+      {name:"Black Tea", am:"ጥቁር ሻይ", desc:"", price:50},
+      {name:"Iced Tea", am:"አይስ ሻይ", desc:"", price:70},
+      {name:"Macchiato", am:"ማኪያቶ", desc:"", price:110},
+      {name:"Peanut Tea", am:"ኦውዝ ሻይ", desc:"", price:100},
+      {name:"Iced Mocha", am:"አይስ ሞካ", desc:"", price:200},
+      {name:"Mocha", am:"ሞካ", desc:"", price:180},
+      {name:"Iced Cafe Latte", am:"አይስ ካፌ ላቴ", desc:"", price:180},
+      {name:"Caramel Iced Latte", am:"ካራሜል አይስ ላቴ", desc:"", price:180},
+      {name:"Caramel Macchiato", am:"ካራሜል ማኪያቶ", desc:"", price:180},
+      {name:"Iced Coffee", am:"አይስ ቡና", desc:"", price:100},
+      {name:"Honey Latte", am:"ሃኒ ላቴ", desc:"", price:190},
+      {name:"Special Tea", am:"ስፔሻል ሻይ", desc:"", price:120},
+      {name:"Special Tea with Alcohol", am:"ስፔሻል ሻይ ከ አልኮል", desc:"", price:150}
+    ]
+  },
+  {
+    id:"soft-drinks", name:"Soft Drinks", nameAm:"ለስላሳ መጠጦች",
+    sub:"",
+    items:[
+      {name:"Soft Drink", am:"ለስላሳ መጠጥ", desc:"", price:70},
+      {name:"Noveda", am:"ኖቬዳ", desc:"", price:80},
+      {name:"Ambo Water", am:"አምቦ ውሃ", desc:"", price:80},
+      {name:"Water — ½ Liter", am:"ውሃ ½ ሊትር", desc:"", price:50}
+    ]
+  },
+  {
+    id:"smoothies", name:"Smoothies", nameAm:"ስሙዚ",
+    sub:"",
+    items:[
+      {name:"Snap Special Smoothie", am:"ስናፕ ስፔሻል ስሙዚ", desc:"", price:300, badge:"House Special"},
+      {name:"Banana & Strawberry Smoothie", am:"ሙዝ እና ስትሮቤሪ ስሙዚ", desc:"", price:300},
+      {name:"Chocolate & Peanut Smoothie", am:"ቸኮሌት እና ኦውዝ ስሙዚ", desc:"", price:300},
+      {name:"Papaya, Avocado & Banana Smoothie", am:"ፓፓያ፣ አቮካዶ እና ሙዝ ስሙዚ", desc:"", price:300},
+      {name:"Banana, Papaya & Peanut Smoothie", am:"ሙዝ፣ ፓፓያ እና ኦውዝ ስሙዚ", desc:"", price:300},
+      {name:"Mango, Avocado & Banana Smoothie", am:"ማንጎ፣ አቮካዶ እና ሙዝ ስሙዚ", desc:"", price:300},
+      {name:"Flaxseed Smoothie", am:"የተልባ ስሙዚ", desc:"", price:300}
+    ]
+  },
+  {
+    id:"juice", name:"Juice", nameAm:"ጭማቂ",
+    sub:"",
+    items:[
+      {name:"Orange Juice", am:"ኦሬንጅ", desc:"", price:400},
+      {name:"Avocado Juice", am:"አቮካዶ", desc:"", price:260},
+      {name:"Mango Juice", am:"ማንጎ", desc:"", price:260},
+      {name:"Papaya Juice", am:"ፓፓያ", desc:"", price:260},
+      {name:"Strawberry Juice", am:"ስትሮቤሪ", desc:"", price:260},
+      {name:"Watermelon Juice", am:"ሃብሃብ", desc:"", price:260},
+      {name:"Mixed Juice", am:"ሚክስድ ጭማቂ", desc:"", price:260},
+      {name:"Seasonal Fruit Salad", am:"ሲዝናል ፍሩት ሳላድ", desc:"", price:300},
+      {name:"Strawberry Mojito", am:"ስትሮቤሪ ሞጂቶ", desc:"", price:350},
+      {name:"Classic Mojito", am:"ክላሲክ ሞጂቶ", desc:"", price:500}
+    ]
+  }
+];
+
+const menuRoot = document.getElementById('menuRoot');
+const catNav = document.getElementById('catNav');
+const emptyState = document.getElementById('emptyState');
+
+MENU.forEach(cat=>{
+  const pill = document.createElement('button');
+  pill.className='cat-pill';
+  pill.textContent=cat.name;
+  pill.dataset.target=cat.id;
+  pill.addEventListener('click', ()=>{
+    document.getElementById(cat.id).scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  catNav.appendChild(pill);
+
+  const section = document.createElement('section');
+  section.className='cat';
+  section.id=cat.id;
+
+  const head = document.createElement('div');
+  head.className='cat-head';
+  head.innerHTML = `<h2>${cat.name}</h2><span class="count">(${cat.items.length})</span>`;
+  section.appendChild(head);
+
+  if(cat.sub){
+    const sub = document.createElement('div');
+    sub.className='cat-sub';
+    sub.textContent = cat.sub;
+    section.appendChild(sub);
+  }
+
+  cat.items.forEach(it=>{
+    const itemId = (cat.id+'-'+it.name).toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    it._id = itemId;
+    const row = document.createElement('div');
+    row.className='item';
+    row.dataset.search = (it.name+' '+it.am+' '+(it.desc||'')).toLowerCase();
+    row.innerHTML = `
+      <div class="item-main">
+        <div class="item-title-row">
+          <span class="item-name">${it.name}</span>
+          ${it.badge? `<span class="badge">${it.badge}</span>`:''}
+        </div>
+        <div class="item-amharic am">${it.am}</div>
+        ${it.desc? `<div class="item-desc">${it.desc}</div>`:''}
+      </div>
+      <div class="item-side">
+        <div class="price-tag" id="tag-${itemId}" data-id="${itemId}">${it.price}<small>ETB</small></div>
+        <div class="stepper" id="step-${itemId}">
+          <button data-id="${itemId}" data-dir="-1">−</button>
+          <span class="qty" id="qty-${itemId}">0</span>
+          <button data-id="${itemId}" data-dir="1">+</button>
+        </div>
+      </div>
+    `;
+    section.appendChild(row);
+  });
+
+  menuRoot.appendChild(section);
+});
+
+/* active pill on scroll */
+const pills = [...document.querySelectorAll('.cat-pill')];
+const sections = MENU.map(c=>document.getElementById(c.id));
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      pills.forEach(p=>p.classList.toggle('active', p.dataset.target===entry.target.id));
+      const activePill = pills.find(p=>p.dataset.target===entry.target.id);
+      if(activePill) activePill.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    }
+  });
+}, {rootMargin:'-100px 0px -70% 0px', threshold:0});
+sections.forEach(s=>io.observe(s));
+
+/* search */
+const searchInput = document.getElementById('search');
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  let anyVisible = false;
+  MENU.forEach(cat=>{
+    const section = document.getElementById(cat.id);
+    const rows = section.querySelectorAll('.item');
+    let visibleCount = 0;
+    rows.forEach(row=>{
+      const match = !q || row.dataset.search.includes(q);
+      row.style.display = match? '':'none';
+      if(match) visibleCount++;
+    });
+    section.style.display = visibleCount>0 ? '' : 'none';
+    if(visibleCount>0) anyVisible = true;
+  });
+  emptyState.style.display = (!anyVisible && q) ? 'block':'none';
+});
+
+/* =========================================================
+   ORDERING SYSTEM
+   Orders are sent instantly to the cashier's screen using
+   ntfy.sh — a free push-notification relay. No app, no
+   account needed to receive on the "Cashier view" page.
+
+   ⚠️ IMPORTANT BEFORE GOING LIVE:
+   Change ORDER_TOPIC below to your own private, hard-to-guess
+   value (letters/numbers only). Anyone who knows this exact
+   topic name could see order traffic, so don't publish it
+   publicly — only the cashier's device needs it.
+   ========================================================= */
+const ORDER_TOPIC = "snap-house-8xgwfllpun";
+const NTFY_BASE = "https://ntfy.sh/" + ORDER_TOPIC;
+
+// flat lookup of every item by id
+const ITEM_INDEX = {};
+MENU.forEach(cat=>cat.items.forEach(it=>{ ITEM_INDEX[it._id] = it; }));
+
+const cart = {}; // id -> qty
+
+function setQty(id, qty){
+  qty = Math.max(0, qty);
+  if(qty===0){ delete cart[id]; } else { cart[id]=qty; }
+  const qtyEl = document.getElementById('qty-'+id);
+  const stepEl = document.getElementById('step-'+id);
+  const tagEl = document.getElementById('tag-'+id);
+  if(qtyEl) qtyEl.textContent = qty;
+  if(stepEl) stepEl.classList.toggle('show', qty>0);
+  if(tagEl) tagEl.classList.toggle('in-cart', qty>0);
+  updateCartBar();
+}
+
+document.getElementById('menuRoot').addEventListener('click', (e)=>{
+  const tag = e.target.closest('.price-tag');
+  if(tag){
+    const id = tag.dataset.id;
+    setQty(id, (cart[id]||0) + 1);
+    return;
+  }
+  const btn = e.target.closest('.stepper button');
+  if(btn){
+    const id = btn.dataset.id;
+    const dir = parseInt(btn.dataset.dir,10);
+    setQty(id, (cart[id]||0) + dir);
+  }
+});
+
+function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
+function cartTotal(){
+  return Object.entries(cart).reduce((sum,[id,qty])=> sum + ITEM_INDEX[id].price*qty, 0);
+}
+
+const cartBar = document.getElementById('cartBar');
+function updateCartBar(){
+  const count = cartCount();
+  document.getElementById('cartBarLeft').textContent = count + (count===1? ' item':' items');
+  document.getElementById('cartBarRight').textContent = cartTotal() + ' ETB · View Order →';
+  cartBar.classList.toggle('show', count>0);
+}
+
+const cartOverlay = document.getElementById('cartOverlay');
+function renderCartLines(){
+  const wrap = document.getElementById('cartLines');
+  const entries = Object.entries(cart);
+  if(entries.length===0){
+    wrap.innerHTML = '<div class="empty-cart">Your order is empty. Tap a price tag on the menu to add a dish.</div>';
+  } else {
+    wrap.innerHTML = entries.map(([id,qty])=>{
+      const it = ITEM_INDEX[id];
+      return `
+        <div class="cart-line">
+          <div class="cl-main">
+            <div class="cl-name">${it.name}</div>
+            <div class="cl-price">${it.price} ETB × ${qty}</div>
+          </div>
+          <div class="stepper show">
+            <button data-id="${id}" data-dir="-1">−</button>
+            <span class="qty">${qty}</span>
+            <button data-id="${id}" data-dir="1">+</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+  document.getElementById('cartTotal').textContent = cartTotal() + ' ETB';
+}
+
+document.getElementById('cartLines').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const dir = parseInt(btn.dataset.dir,10);
+  setQty(id, (cart[id]||0) + dir);
+  renderCartLines();
+});
+
+document.getElementById('cartBarInner').addEventListener('click', ()=>{
+  renderCartLines();
+  cartOverlay.classList.add('show');
+});
+document.getElementById('closeCart').addEventListener('click', ()=> cartOverlay.classList.remove('show'));
+cartOverlay.addEventListener('click', (e)=>{ if(e.target===cartOverlay) cartOverlay.classList.remove('show'); });
+
+const submitBtn = document.getElementById('submitOrderBtn');
+submitBtn.addEventListener('click', async ()=>{
+  const table = document.getElementById('tableNum').value.trim();
+  if(cartCount()===0){ alert('Add at least one item first.'); return; }
+  if(!table){ alert('Please enter your table number.'); document.getElementById('tableNum').focus(); return; }
+
+  const note = document.getElementById('orderNote').value.trim();
+  const items = Object.entries(cart).map(([id,qty])=>({
+    name: ITEM_INDEX[id].name, qty, price: ITEM_INDEX[id].price
+  }));
+  const total = cartTotal();
+  const payload = {
+    table, note, items, total,
+    time: new Date().toISOString()
+  };
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending…';
+  try{
+    await fetch(NTFY_BASE, {
+      method:'POST',
+      headers:{
+        'Title': `New Order — Table ${table}`,
+        'Priority':'urgent',
+        'Tags':'hamburger'
+      },
+      body: JSON.stringify(payload)
+    });
+    document.getElementById('successText').textContent =
+      `Table ${table}: your order for ${total} ETB has been sent to the cashier.`;
+    document.getElementById('successBox').classList.add('show');
+    cartOverlay.classList.remove('show');
+    Object.keys(cart).forEach(id=>setQty(id,0));
+    document.getElementById('orderNote').value='';
+  }catch(err){
+    alert('Could not send your order — please check your internet connection and try again, or tell a staff member your table number.');
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Order';
+  }
+});
+
+document.getElementById('successClose').addEventListener('click', ()=>{
+  document.getElementById('successBox').classList.remove('show');
+});
+
+/* =========================================================
+   CASHIER DASHBOARD  (open with  yourmenu.html?cashier=1)
+   ========================================================= */
+function initCashier(){
+  document.getElementById('customerRoot').style.display='none';
+  document.getElementById('cashierRoot').style.display='block';
+
+  const list = document.getElementById('ordersList');
+  const emptyMsg = document.getElementById('cashierEmpty');
+  const statusText = document.getElementById('statusText');
+  const seen = new Set();
+
+  function beep(){
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.value = 0.15;
+      o.start(); o.stop(ctx.currentTime + 0.18);
+    }catch(e){}
+  }
+
+  function renderOrder(msg, prepend){
+    let data;
+    try{ data = JSON.parse(msg.message); }catch(e){ return; }
+    if(seen.has(msg.id)) return;
+    seen.add(msg.id);
+    emptyMsg.style.display='none';
+
+    const card = document.createElement('div');
+    card.className='order-card';
+    card.id = 'order-'+msg.id;
+    const timeStr = new Date(data.time || msg.time*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    card.innerHTML = `
+      <div class="order-card-head">
+        <span class="order-table">Table ${data.table}</span>
+        <span class="order-time">${timeStr}</span>
+      </div>
+      <ul class="order-items">
+        ${data.items.map(it=>`<li><span>${it.qty} × ${it.name}</span><span>${it.qty*it.price} ETB</span></li>`).join('')}
+      </ul>
+      ${data.note? `<div class="order-note">Note: ${data.note}</div>`:''}
+      <div class="order-foot">
+        <span class="order-total">${data.total} ETB</span>
+        <button class="done-btn">Send to Chef</button>
+      </div>
+    `;
+    const doneList = document.getElementById('doneList');
+    const doneLabel = document.getElementById('doneLabel');
+    card.querySelector('.done-btn').addEventListener('click', ()=>{
+      card.classList.add('completed');
+      const foot = card.querySelector('.order-foot');
+      foot.innerHTML = `<span class="order-total">${data.total} ETB</span><span class="completed-tag">✓ Sent to Chef</span>`;
+      doneList.prepend(card);
+      doneLabel.style.display='block';
+      if(list.children.length===0) emptyMsg.style.display='block';
+    });
+    if(prepend){ list.prepend(card); } else { list.appendChild(card); }
+    if(!prepend) beep();
+  }
+
+  // backfill recent orders (last 12 hours) then stream live ones
+  fetch(NTFY_BASE + '/json?poll=1&since=12h')
+    .then(r=>r.text())
+    .then(text=>{
+      text.trim().split('\n').filter(Boolean).forEach(line=>{
+        try{
+          const msg = JSON.parse(line);
+          if(msg.event==='message') renderOrder(msg, true);
+        }catch(e){}
+      });
+    })
+    .catch(()=>{});
+
+  const es = new EventSource(NTFY_BASE + '/sse');
+  es.onopen = ()=>{ statusText.textContent = 'Live — waiting for orders'; };
+  es.onerror = ()=>{ statusText.textContent = 'Reconnecting…'; };
+  es.onmessage = (e)=>{
+    try{
+      const msg = JSON.parse(e.data);
+      if(msg.event==='message'){
+        statusText.textContent = 'Live';
+        renderOrder(msg, false);
+      }
+    }catch(err){}
+  };
+}
+
+if(new URLSearchParams(window.location.search).get('cashier')==='1'){
+  initCashier();
+}
+</script>
+</body>
+</html>
