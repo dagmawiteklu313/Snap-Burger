@@ -476,10 +476,6 @@
   .order-note{font-size:0.82rem; color:var(--accent-2); margin-bottom:10px;}
   .order-foot{display:flex; justify-content:space-between; align-items:center;}
   .order-total{font-family:'Anton',sans-serif; font-size:1.1rem;}
-  .done-btn{
-    background:var(--accent); color:#1a1109; border:none;
-    padding:9px 16px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer;
-  }
   .cashier-empty{text-align:center; color:var(--text-muted); padding:60px 20px; font-size:0.9rem;}
   .section-label{
     font-family:'Anton',sans-serif; font-size:0.9rem; letter-spacing:1.5px;
@@ -496,6 +492,65 @@
     font-size:0.78rem; font-weight:800;
     padding:7px 14px; border-radius:8px;
   }
+  .order-actions{display:flex; gap:8px;}
+  .save-btn{
+    background:var(--accent); color:#1a1109; border:none;
+    padding:9px 16px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer;
+  }
+  .delete-btn{
+    background:transparent; color:#e5605a; border:1px solid rgba(229,96,90,0.5);
+    padding:9px 14px; border-radius:8px; font-weight:700; font-size:0.82rem; cursor:pointer;
+  }
+  .delete-btn:hover{background:rgba(229,96,90,0.12);}
+
+  /* ---------- ADMIN VIEW ---------- */
+  #adminRoot{display:none; max-width:640px; margin:0 auto; padding:20px 16px 120px;}
+  .admin-head{margin-bottom:20px;}
+  .admin-head h1{
+    font-family:'Anton',sans-serif; font-size:1.6rem; color:var(--accent-2); margin:0 0 4px;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .admin-head p{color:var(--text-muted); font-size:0.82rem; margin:0;}
+  .admin-cat{margin-bottom:26px;}
+  .admin-cat h2{
+    font-family:'Anton',sans-serif; font-size:1.1rem; color:var(--accent-2);
+    text-transform:uppercase; letter-spacing:1px; margin:0 0 10px;
+    border-bottom:1px solid var(--line); padding-bottom:8px;
+  }
+  .admin-row{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 0; border-bottom:1px dashed var(--line);
+  }
+  .admin-row .ar-name{flex:1; min-width:0; font-size:0.92rem; font-weight:600;}
+  .admin-row .ar-am{display:block; font-size:0.78rem; color:var(--text-muted); font-weight:400; margin-top:1px;}
+  .admin-row input{
+    width:90px; padding:9px 10px; border-radius:8px;
+    border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-family:'Inter',sans-serif; font-size:0.92rem;
+    text-align:right; outline:none;
+  }
+  .admin-row input:focus{border-color:var(--accent);}
+  .admin-row input.changed{border-color:var(--accent-2); background:rgba(242,181,68,0.1);}
+  .admin-save-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, transparent, var(--bg) 40%);
+  }
+  .admin-save-bar-inner{
+    max-width:640px; margin:0 auto;
+    display:flex; gap:10px;
+  }
+  .admin-save-bar button{
+    flex:1; padding:15px; border:none; border-radius:12px;
+    font-weight:800; font-size:0.95rem; cursor:pointer;
+  }
+  #adminSaveBtn{background:linear-gradient(135deg, var(--accent), #b85e12); color:#1a1109;}
+  .admin-toast{
+    position:fixed; left:50%; top:24px; transform:translateX(-50%);
+    background:#2e7d32; color:#eafff0; padding:12px 20px; border-radius:10px;
+    font-weight:700; font-size:0.88rem; z-index:70; display:none;
+  }
+  .admin-toast.show{display:block;}
 </style>
 </head>
 <body>
@@ -528,6 +583,7 @@
   <div class="fam am">ስናፕ በርገር እና ጁስ ቤት</div>
   <div style="margin-top:10px; opacity:0.7;">Prices in Ethiopian Birr (ETB) · Menu subject to change</div>
   <a href="?cashier=1" class="staff-link">Staff / Cashier view →</a>
+  <a href="?admin=1" class="staff-link">Admin / Edit Prices →</a>
 </footer>
 
 </div><!-- /customerRoot -->
@@ -589,6 +645,21 @@
 
   <div class="section-label" id="doneLabel" style="display:none;">Sent to Chef</div>
   <div id="doneList"></div>
+</div>
+
+<!-- admin dashboard -->
+<div id="adminRoot">
+  <div class="admin-head">
+    <h1>Admin — Edit Prices</h1>
+    <p>Change any price below, then tap Save. Updated prices appear for customers next time they open the menu.</p>
+  </div>
+  <div id="adminCats"></div>
+</div>
+<div class="admin-toast" id="adminToast">✓ Prices saved</div>
+<div class="admin-save-bar" id="adminSaveBar" style="display:none;">
+  <div class="admin-save-bar-inner">
+    <button id="adminSaveBtn">Save Changes</button>
+  </div>
 </div>
 
 <script>
@@ -844,10 +915,35 @@ searchInput.addEventListener('input', ()=>{
    ========================================================= */
 const ORDER_TOPIC = "snap-house-8xgwfllpun";
 const NTFY_BASE = "https://ntfy.sh/" + ORDER_TOPIC;
+const MENU_TOPIC = ORDER_TOPIC + "-prices";
+const MENU_BASE = "https://ntfy.sh/" + MENU_TOPIC;
+const ADMIN_PIN = "2580"; // change this — it's the passcode for the price-editing page
 
 // flat lookup of every item by id
 const ITEM_INDEX = {};
 MENU.forEach(cat=>cat.items.forEach(it=>{ ITEM_INDEX[it._id] = it; }));
+
+// pull the latest saved prices (set from the Admin page) and apply them
+async function applyLatestPrices(){
+  try{
+    const res = await fetch(MENU_BASE + '/json?poll=1&since=all');
+    const text = await res.text();
+    const lines = text.trim().split('\n').filter(Boolean);
+    if(lines.length===0) return;
+    const last = JSON.parse(lines[lines.length-1]);
+    const overrides = JSON.parse(last.message);
+    Object.entries(overrides).forEach(([id, price])=>{
+      if(!ITEM_INDEX[id]) return;
+      ITEM_INDEX[id].price = price;
+      const tag = document.getElementById('tag-'+id);
+      if(tag){ tag.innerHTML = price + '<small>ETB</small>'; }
+    });
+  }catch(e){ /* no overrides yet, or offline — default prices stay as-is */ }
+}
+if(new URLSearchParams(window.location.search).get('cashier')!=='1' &&
+   new URLSearchParams(window.location.search).get('admin')!=='1'){
+  applyLatestPrices();
+}
 
 const cart = {}; // id -> qty
 
@@ -1005,7 +1101,8 @@ function initCashier(){
   const emptyMsg = document.getElementById('cashierEmpty');
   const statusText = document.getElementById('statusText');
   const rendered = new Map(); // orderId -> card element
-  const doneIds = new Set();  // orderIds already confirmed done
+  const doneIds = new Set();    // orderIds already saved/confirmed
+  const deletedIds = new Set(); // orderIds removed by the cashier
 
   function beep(){
     try{
@@ -1017,25 +1114,36 @@ function initCashier(){
     }catch(e){}
   }
 
+  function refreshEmptyState(){
+    emptyMsg.style.display = list.children.length===0 ? 'block' : 'none';
+  }
+
   function markCompleted(card, total){
     if(card.classList.contains('completed')) return;
     card.classList.add('completed');
     const foot = card.querySelector('.order-foot');
-    foot.innerHTML = `<span class="order-total">${total} ETB</span><span class="completed-tag">✓ Sent to Chef</span>`;
+    foot.innerHTML = `<span class="order-total">${total} ETB</span><span class="completed-tag">✓ Saved</span>`;
     doneList.prepend(card);
     doneLabel.style.display='block';
-    if(list.children.length===0) emptyMsg.style.display='block';
+    refreshEmptyState();
   }
 
-  function publishDone(orderId){
-    const url = NTFY_BASE + '?title=' + encodeURIComponent('Order completed') + '&priority=low&tags=white_check_mark';
-    fetch(url, { method:'POST', body: JSON.stringify({ type:'status', status:'done', orderId }) }).catch(()=>{});
+  function removeCard(orderId){
+    const card = rendered.get(orderId);
+    if(card) card.remove();
+    rendered.delete(orderId);
+    refreshEmptyState();
+  }
+
+  function publishStatus(orderId, status){
+    const url = NTFY_BASE + '?title=' + encodeURIComponent('Order ' + status) + '&priority=low&tags=white_check_mark';
+    fetch(url, { method:'POST', body: JSON.stringify({ type:'status', status, orderId }) }).catch(()=>{});
   }
 
   // orderId = the ntfy message id of the original order
   function renderOrder(orderId, data, opts){
     opts = opts || {};
-    if(rendered.has(orderId)) return;
+    if(rendered.has(orderId) || deletedIds.has(orderId)) return;
     emptyMsg.style.display='none';
 
     const card = document.createElement('div');
@@ -1053,20 +1161,30 @@ function initCashier(){
       ${data.note? `<div class="order-note">Note: ${data.note}</div>`:''}
       <div class="order-foot">
         <span class="order-total">${data.total} ETB</span>
-        <button class="done-btn">Send to Chef</button>
+        <div class="order-actions">
+          <button class="delete-btn">Delete</button>
+          <button class="save-btn">Save</button>
+        </div>
       </div>
     `;
-    card.querySelector('.done-btn').addEventListener('click', ()=>{
+    card.querySelector('.save-btn').addEventListener('click', ()=>{
       markCompleted(card, data.total);
-      publishDone(orderId);
+      publishStatus(orderId, 'done');
+    });
+    card.querySelector('.delete-btn').addEventListener('click', ()=>{
+      if(!confirm('Delete this order for Table ' + data.table + '? This cannot be undone.')) return;
+      deletedIds.add(orderId);
+      removeCard(orderId);
+      publishStatus(orderId, 'deleted');
     });
 
     rendered.set(orderId, card);
 
     if(doneIds.has(orderId)){
-      // already confirmed done in a previous session / another device
+      // already saved in a previous session / another device
       if(opts.prepend){ doneList.prepend(card); } else { doneList.appendChild(card); }
       markCompleted(card, data.total);
+      doneLabel.style.display='block';
     } else {
       if(opts.prepend){ list.prepend(card); } else { list.appendChild(card); }
       if(!opts.silent) beep();
@@ -1081,7 +1199,15 @@ function initCashier(){
     if(data.type === 'status' && data.status === 'done'){
       doneIds.add(data.orderId);
       const card = rendered.get(data.orderId);
-      if(card) markCompleted(card, card.dataset.total || '');
+      if(card){
+        const totalEl = card.querySelector('.order-total');
+        markCompleted(card, totalEl ? totalEl.textContent.replace(' ETB','') : '');
+      }
+      return;
+    }
+    if(data.type === 'status' && data.status === 'deleted'){
+      deletedIds.add(data.orderId);
+      removeCard(data.orderId);
       return;
     }
     if(data.type === 'order' || data.items){
@@ -1097,20 +1223,22 @@ function initCashier(){
         .map(l=>{ try{ return JSON.parse(l); }catch(e){ return null; } })
         .filter(m=> m && m.event==='message');
 
-      // pass 1: collect which orders are already marked done
+      // pass 1: collect status signals (saved / deleted) first
       lines.forEach(msg=>{
         try{
           const data = JSON.parse(msg.message);
           if(data.type==='status' && data.status==='done') doneIds.add(data.orderId);
+          if(data.type==='status' && data.status==='deleted') deletedIds.add(data.orderId);
         }catch(e){}
       });
-      // pass 2: render orders (done ones go straight to "Sent to Chef", silently)
+      // pass 2: render orders — deleted ones are skipped, saved ones go straight to "Sent to Chef"
       lines.forEach(msg=>{
         try{
           const data = JSON.parse(msg.message);
           if(data.type==='order' || data.items) renderOrder(msg.id, data, {prepend:true, silent:true});
         }catch(e){}
       });
+      refreshEmptyState();
     })
     .catch(()=>{})
     .finally(()=>{
@@ -1129,8 +1257,93 @@ function initCashier(){
     });
 }
 
-if(new URLSearchParams(window.location.search).get('cashier')==='1'){
+/* =========================================================
+   ADMIN — EDIT PRICES  (open with  yourmenu.html?admin=1)
+   ========================================================= */
+function initAdmin(){
+  const pin = prompt('Enter admin passcode:');
+  if(pin !== ADMIN_PIN){
+    alert('Incorrect passcode.');
+    window.location.href = window.location.pathname;
+    return;
+  }
+  document.getElementById('customerRoot').style.display='none';
+  document.getElementById('adminRoot').style.display='block';
+
+  const catsRoot = document.getElementById('adminCats');
+  const saveBar = document.getElementById('adminSaveBar');
+  const saveBtn = document.getElementById('adminSaveBtn');
+  const toast = document.getElementById('adminToast');
+  const changed = new Set();
+
+  MENU.forEach(cat=>{
+    const block = document.createElement('div');
+    block.className='admin-cat';
+    block.innerHTML = `<h2>${cat.name}</h2>`;
+    cat.items.forEach(it=>{
+      const row = document.createElement('div');
+      row.className='admin-row';
+      row.innerHTML = `
+        <div class="ar-name">${it.name}<span class="ar-am am">${it.am}</span></div>
+        <input type="number" inputmode="numeric" min="0" step="1" value="${it.price}" data-id="${it._id}">
+      `;
+      const input = row.querySelector('input');
+      input.addEventListener('input', ()=>{
+        input.classList.add('changed');
+        changed.add(it._id);
+        saveBar.style.display = changed.size>0 ? 'block' : 'none';
+      });
+      block.appendChild(row);
+    });
+    catsRoot.appendChild(block);
+  });
+
+  // pre-fill with the latest saved prices, if any exist already
+  fetch(MENU_BASE + '/json?poll=1&since=all')
+    .then(r=>r.text())
+    .then(text=>{
+      const lines = text.trim().split('\n').filter(Boolean);
+      if(lines.length===0) return;
+      const last = JSON.parse(lines[lines.length-1]);
+      const overrides = JSON.parse(last.message);
+      Object.entries(overrides).forEach(([id, price])=>{
+        const input = catsRoot.querySelector(`input[data-id="${id}"]`);
+        if(input) input.value = price;
+      });
+    })
+    .catch(()=>{});
+
+  saveBtn.addEventListener('click', async ()=>{
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+    const overrides = {};
+    catsRoot.querySelectorAll('input[data-id]').forEach(input=>{
+      overrides[input.dataset.id] = Number(input.value) || 0;
+    });
+    try{
+      await fetch(MENU_BASE + '?title=' + encodeURIComponent('Prices updated') + '&priority=low', {
+        method:'POST',
+        body: JSON.stringify(overrides)
+      });
+      toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), 2500);
+      changed.clear();
+      catsRoot.querySelectorAll('input.changed').forEach(i=>i.classList.remove('changed'));
+      saveBar.style.display='none';
+    }catch(e){
+      alert('Could not save — check your internet connection and try again.');
+    }finally{
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Changes';
+    }
+  });
+}
+
+const params = new URLSearchParams(window.location.search);
+if(params.get('cashier')==='1'){
   initCashier();
+} else if(params.get('admin')==='1'){
+  initAdmin();
 }
 </script>
 </body>
