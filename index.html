@@ -1118,11 +1118,23 @@ function initCashier(){
     emptyMsg.style.display = list.children.length===0 ? 'block' : 'none';
   }
 
-  function markCompleted(card, total){
+  function markCompleted(card, orderId, total, table){
     if(card.classList.contains('completed')) return;
     card.classList.add('completed');
     const foot = card.querySelector('.order-foot');
-    foot.innerHTML = `<span class="order-total">${total} ETB</span><span class="completed-tag">✓ Saved</span>`;
+    foot.innerHTML = `
+      <span class="order-total">${total} ETB</span>
+      <div class="order-actions">
+        <button class="delete-btn">Delete</button>
+        <span class="completed-tag">✓ Saved</span>
+      </div>
+    `;
+    foot.querySelector('.delete-btn').addEventListener('click', ()=>{
+      if(!confirm('Delete this saved order for Table ' + table + '? This cannot be undone.')) return;
+      deletedIds.add(orderId);
+      removeCard(orderId);
+      publishStatus(orderId, 'deleted');
+    });
     doneList.prepend(card);
     doneLabel.style.display='block';
     refreshEmptyState();
@@ -1149,6 +1161,8 @@ function initCashier(){
     const card = document.createElement('div');
     card.className='order-card';
     card.id = 'order-'+orderId;
+    card.dataset.table = data.table;
+    card.dataset.total = data.total;
     const timeStr = new Date(data.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     card.innerHTML = `
       <div class="order-card-head">
@@ -1168,7 +1182,7 @@ function initCashier(){
       </div>
     `;
     card.querySelector('.save-btn').addEventListener('click', ()=>{
-      markCompleted(card, data.total);
+      markCompleted(card, orderId, data.total, data.table);
       publishStatus(orderId, 'done');
     });
     card.querySelector('.delete-btn').addEventListener('click', ()=>{
@@ -1183,8 +1197,7 @@ function initCashier(){
     if(doneIds.has(orderId)){
       // already saved in a previous session / another device
       if(opts.prepend){ doneList.prepend(card); } else { doneList.appendChild(card); }
-      markCompleted(card, data.total);
-      doneLabel.style.display='block';
+      markCompleted(card, orderId, data.total, data.table);
     } else {
       if(opts.prepend){ list.prepend(card); } else { list.appendChild(card); }
       if(!opts.silent) beep();
@@ -1200,8 +1213,7 @@ function initCashier(){
       doneIds.add(data.orderId);
       const card = rendered.get(data.orderId);
       if(card){
-        const totalEl = card.querySelector('.order-total');
-        markCompleted(card, totalEl ? totalEl.textContent.replace(' ETB','') : '');
+        markCompleted(card, data.orderId, card.dataset.total || '', card.dataset.table || '');
       }
       return;
     }
