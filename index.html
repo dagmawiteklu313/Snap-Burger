@@ -193,6 +193,19 @@
     align-items:flex-start;
   }
   .item:last-child{border-bottom:none;}
+  .item-thumb{
+    flex:0 0 auto;
+    width:64px; height:64px;
+    border-radius:12px;
+    overflow:hidden;
+    background:linear-gradient(135deg, var(--surface-2), var(--surface));
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem;
+  }
+  .item-thumb img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
   .item-main{flex:1; min-width:0;}
   .item-title-row{
     display:flex; align-items:center; gap:8px; flex-wrap:wrap;
@@ -811,6 +824,12 @@ const menuRoot = document.getElementById('menuRoot');
 const catNav = document.getElementById('catNav');
 const emptyState = document.getElementById('emptyState');
 
+// fallback icon shown until a real photo is added for that item (set it.img to a URL to use a real photo)
+const CAT_ICON = {
+  breakfast:'🍳', burgers:'🍔', wraps:'🌯', chicken:'🍗',
+  fasting:'🥗', "hot-drinks":'☕', "soft-drinks":'🥤', smoothies:'🥤', juice:'🧃'
+};
+
 MENU.forEach(cat=>{
   const pill = document.createElement('button');
   pill.className='cat-pill';
@@ -840,10 +859,15 @@ MENU.forEach(cat=>{
   cat.items.forEach(it=>{
     const itemId = (cat.id+'-'+it.name).toLowerCase().replace(/[^a-z0-9]+/g,'-');
     it._id = itemId;
+    const icon = CAT_ICON[cat.id] || '🍽️';
+    const thumb = it.img
+      ? `<img src="${it.img}" alt="${it.name}" loading="lazy" onerror="this.parentElement.innerHTML='${icon}';">`
+      : icon;
     const row = document.createElement('div');
     row.className='item';
     row.dataset.search = (it.name+' '+it.am+' '+(it.desc||'')).toLowerCase();
     row.innerHTML = `
+      <div class="item-thumb">${thumb}</div>
       <div class="item-main">
         <div class="item-title-row">
           <span class="item-name">${it.name}</span>
